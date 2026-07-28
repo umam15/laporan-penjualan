@@ -1,0 +1,210 @@
+:root {
+    --primary: #1e6f5c;
+    --primary-dark: #144d40;
+    --bg: #f4f6f5;
+    --card-bg: #ffffff;
+    --border: #dbe2df;
+    --text: #24322d;
+    --muted: #6b7a74;
+    --danger: #c0392b;
+    --success: #1e6f5c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.navbar {
+    background: var(--primary-dark);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.navbar .brand { font-weight: 700; font-size: 1.1rem; }
+
+.navbar .links { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+.navbar a {
+    color: #e6efeb;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.navbar a.active { font-weight: 700; text-decoration: underline; }
+
+.navbar a.logout { color: #ffd7d0; }
+
+.navbar .user { color: #b9d3cb; font-size: 0.85rem; }
+
+.container {
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 0 16px 48px;
+}
+
+h1 { font-size: 1.5rem; margin-bottom: 16px; }
+h2 { font-size: 1.15rem; }
+h3 { margin-top: 0; }
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.card.info ul { margin: 0; padding-left: 20px; }
+.card.info li { margin-bottom: 6px; }
+
+label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 12px 0 4px;
+}
+
+input[type="text"], input[type="password"], input[type="date"], select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.form-row > div { flex: 1; min-width: 180px; }
+
+.hint { color: var(--muted); font-size: 0.82rem; margin: 6px 0 0; }
+ul.hint { padding-left: 20px; }
+ul.hint li { margin: 2px 0; }
+.hint-inline { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+
+button {
+    margin-top: 16px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+button:hover { background: var(--primary-dark); }
+
+button.danger { background: var(--danger); }
+button.danger:hover { background: #922b21; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+table th, table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+table th { color: var(--muted); font-weight: 600; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.actions form.inline { display: inline-flex; gap: 6px; margin: 0; }
+.actions button { margin-top: 0; padding: 6px 10px; font-size: 0.85rem; }
+
+.alert {
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+}
+
+.alert.error { background: #fdecea; color: var(--danger); border: 1px solid #f5c6c0; }
+.alert.success { background: #e8f5f0; color: var(--success); border: 1px solid #bfe3d4; }
+
+.radio-group { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
+.radio-inline { display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer; }
+.radio-inline input[type="radio"] { width: auto; margin: 0; }
+.checkbox-inline { display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer; margin: 4px 0; }
+.checkbox-inline input[type="checkbox"] { width: auto; margin: 0; }
+.checkbox-inline input[type="checkbox"]:disabled + text,
+.checkbox-inline:has(input:disabled) { color: #999; cursor: not-allowed; }
+
+/* Login page */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.login-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.login-box h1 { margin: 0 0 2px; font-size: 1.3rem; color: var(--primary-dark); }
+.login-box .subtitle { margin: 0 0 18px; color: var(--muted); font-size: 0.85rem; }
+.login-box h2 { margin: 0 0 8px; font-size: 1rem; color: var(--muted); }
+.login-box button { width: 100%; }
+
+/* Tabel lebar (mis. daftar user, referensi kantor) bisa digeser
+   horizontal di layar sempit alih-alih memaksa layout melebar/rusak. */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 8px;
+}
+.table-responsive table { margin-top: 0; min-width: 480px; }
+
+/* Mobile (ponsel) */
+@media (max-width: 640px) {
+    .navbar { padding: 10px 14px; gap: 6px; }
+    .navbar .brand { font-size: 1rem; }
+    .navbar .links { gap: 10px; row-gap: 6px; }
+    .navbar a, .navbar .user { font-size: 0.85rem; }
+
+    .container { margin: 12px auto; padding: 0 12px 32px; }
+    h1 { font-size: 1.25rem; }
+
+    .card { padding: 14px; border-radius: 8px; }
+
+    /* Tombol aksi utama (Simpan/Unduh/Tambah) full-width agar mudah
+       disentuh, tanpa memengaruhi tombol kecil di baris tabel (.actions). */
+    form.card > button[type="submit"],
+    .card > form > button[type="submit"] {
+        width: 100%;
+    }
+
+    .actions { gap: 6px; }
+    .actions form.inline input[type="password"] { width: 100% !important; min-width: 0; }
+}
+
+/* Label radio/checkbox dengan keterangan yang bisa turun ke baris baru:
+   biarkan kotak centang/radio tetap rata atas, bukan rata tengah. */
+.radio-inline, .checkbox-inline { align-items: flex-start; }
+.radio-inline input, .checkbox-inline input { margin-top: 3px; flex-shrink: 0; }
