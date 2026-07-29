@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 
+/** Versi aplikasi saat ini, ditampilkan di navbar. Update di setiap rilis. */
+define('APP_VERSION', '1.2.1');
+
 session_start();
 date_default_timezone_set('Asia/Jakarta');
 

@@ -46,6 +46,8 @@ body {
 
 .navbar .user { color: #b9d3cb; font-size: 0.85rem; }
 
+.navbar .app-version { color: #8fa9a1; font-size: 0.75rem; opacity: 0.8; }
+
 .container {
     max-width: 900px;
     margin: 24px auto;
