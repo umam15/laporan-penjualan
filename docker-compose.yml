@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - app_data:/var/www/html/data
+    restart: unless-stopped
+
+volumes:
+  app_data:

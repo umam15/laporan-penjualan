@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="login-page">
 <div class="login-box">
     <h1>Laporan Penjualan</h1>
-    <p class="subtitle">Untuk Keperluan Pajak</p>
+    <p class="subtitle">Untuk diolah lebih lanjut</p>
     <h2><?= $isSetup ? 'Buat Akun Admin Pertama' : 'Login Staf' ?></h2>
     <?php if ($isSetup): ?>
         <p class="hint">Belum ada user sama sekali. Buat akun admin pertama untuk mulai memakai aplikasi

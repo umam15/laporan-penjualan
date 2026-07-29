@@ -3,10 +3,54 @@ declare(strict_types=1);
 require __DIR__ . '/bootstrap.php';
 Auth::requireAdmin();
 
+// Unduh backup pengaturan sebagai file JSON (key-value settings.db, tanpa data user staf).
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'backup_download') {
+    $backup = [
+        'app'         => 'laporan-penjualan',
+        'type'        => 'settings_backup',
+        'version'     => 1,
+        'exported_at' => date('c'),
+        'settings'    => Settings::all(),
+    ];
+    $json = json_encode($backup, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    $filename = 'laporan-penjualan-settings_' . date('Y-m-d_His') . '.json';
+    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Content-Length: ' . (string) strlen($json));
+    echo $json;
+    exit;
+}
+
 $message = '';
 $error = '';
 $dbMessage = '';
 $dbError = '';
+$restoreMessage = '';
+$restoreError = '';
+
+// Pulihkan pengaturan dari file backup JSON yang diunggah admin.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'restore') {
+    if (!isset($_FILES['backup_file']) || $_FILES['backup_file']['error'] !== UPLOAD_ERR_OK) {
+        $restoreError = 'Pilih file backup (.json) yang valid untuk dipulihkan.';
+    } else {
+        $raw  = (string) file_get_contents($_FILES['backup_file']['tmp_name']);
+        $data = json_decode($raw, true);
+        if (!is_array($data) || !isset($data['settings']) || !is_array($data['settings'])) {
+            $restoreError = 'Format file backup tidak dikenali. Gunakan file hasil "Unduh Backup" dari aplikasi ini.';
+        } else {
+            $restored = 0;
+            foreach ($data['settings'] as $key => $value) {
+                if (!is_string($key) || $key === '' || !is_scalar($value)) {
+                    continue;
+                }
+                Settings::set($key, (string) $value);
+                $restored++;
+            }
+            $restoreMessage = "Pengaturan berhasil dipulihkan dari backup ({$restored} item). "
+                . 'Periksa kembali nilai di bawah, termasuk Pengaturan Database.';
+        }
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'db') {
     $dbDefault = Database::getConfig()['pgsql'] ?? [];
@@ -220,6 +264,34 @@ try {
             <button type="submit">Simpan &amp; Uji Koneksi</button>
         </form>
         <p class="hint">Koneksi akan diuji terlebih dahulu sebelum disimpan. Bila gagal terhubung, pengaturan lama tetap dipakai.</p>
+    </div>
+
+    <div class="card">
+        <h3>Backup &amp; Restore Pengaturan</h3>
+        <p class="hint">
+            Backup mengunduh seluruh pengaturan halaman ini (filter, tarif pajak, format CSV,
+            field Dashboard, <strong>termasuk kredensial koneksi database</strong>) sebagai satu
+            file JSON. Simpan file ini di tempat aman. Backup <strong>tidak</strong> berisi data
+            akun/password user staf (lihat menu User). Restore akan menimpa nilai pengaturan yang
+            sedang aktif dengan isi file backup yang dipilih.
+        </p>
+        <?php if ($restoreMessage): ?><div class="alert success"><?= htmlspecialchars($restoreMessage) ?></div><?php endif; ?>
+        <?php if ($restoreError): ?><div class="alert error"><?= htmlspecialchars($restoreError) ?></div><?php endif; ?>
+
+        <form method="get" action="admin_settings.php">
+            <input type="hidden" name="action" value="backup_download">
+            <button type="submit">⬇ Unduh Backup (JSON)</button>
+        </form>
+
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="form" value="restore">
+            <label>Pulihkan dari File Backup (.json)</label>
+            <input type="file" name="backup_file" accept="application/json,.json" required>
+            <button type="submit"
+                onclick="return confirm('Pengaturan yang sedang aktif akan ditimpa dengan isi file backup ini. Lanjutkan?');">
+                Pulihkan Pengaturan
+            </button>
+        </form>
     </div>
 
     <div class="card info">

@@ -1,0 +1,6 @@
+.git
+.gitignore
+sample
+data/*.db
+README.md
+LICENSE
