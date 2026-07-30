@@ -142,6 +142,7 @@ table th { color: var(--muted); font-weight: 600; }
 
 .alert.error { background: #fdecea; color: var(--danger); border: 1px solid #f5c6c0; }
 .alert.success { background: #e8f5f0; color: var(--success); border: 1px solid #bfe3d4; }
+.alert.warning { background: #fdf3e3; color: #8a5a00; border: 1px solid #f0d9a8; }
 
 .radio-group { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
 .radio-inline { display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer; }

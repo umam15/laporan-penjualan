@@ -28,6 +28,19 @@ $isAdmin = Auth::isAdmin();
 $showField = static function (string $field) use ($isAdmin): bool {
     return $isAdmin || Settings::isDashboardFieldVisible($field);
 };
+
+// Cek cepat koneksi ke database transaksi (PostgreSQL) sebelum staf mencoba
+// mengunduh. Tanpa ini, staf baru tahu koneksi bermasalah setelah klik
+// "Unduh CSV" dan mendapat pesan generik dari export.php.
+$dbConnected = true;
+$dbErrorDetail = '';
+try {
+    Database::pgsql()->query('SELECT 1');
+} catch (Throwable $e) {
+    $dbConnected = false;
+    $dbErrorDetail = $e->getMessage();
+    error_log('Dashboard: koneksi database transaksi gagal: ' . $dbErrorDetail);
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -43,26 +56,39 @@ $showField = static function (string $field) use ($isAdmin): bool {
 <div class="container">
     <h1>Download Laporan Penjualan</h1>
 
+    <?php if (!$dbConnected): ?>
+    <div class="alert warning">
+        <strong>⚠ Tidak dapat terhubung ke database transaksi.</strong>
+        Unduh laporan belum bisa dilakukan saat ini. Silakan coba lagi beberapa saat lagi,
+        atau hubungi administrator bila masalah berlanjut.
+        <?php if ($isAdmin): ?>
+            <br>
+            <span class="hint-inline">Detail teknis: <?= htmlspecialchars($dbErrorDetail) ?></span>
+            — periksa <a href="admin_settings.php">Pengaturan Database</a>.
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <form method="get" action="export.php" class="card">
         <div class="form-row">
             <div>
                 <label>Tanggal Awal</label>
-                <input type="date" name="start" value="<?= htmlspecialchars($startDate) ?>" required>
+                <input type="date" name="start" value="<?= htmlspecialchars($startDate) ?>" required <?= $dbConnected ? '' : 'disabled' ?>>
             </div>
             <div>
                 <label>Tanggal Akhir</label>
-                <input type="date" name="end" value="<?= htmlspecialchars($endDate) ?>" required>
+                <input type="date" name="end" value="<?= htmlspecialchars($endDate) ?>" required <?= $dbConnected ? '' : 'disabled' ?>>
             </div>
         </div>
         <label>Format CSV (locale)</label>
-        <select name="locale">
+        <select name="locale" <?= $dbConnected ? '' : 'disabled' ?>>
             <?php foreach (CsvLocale::options() as $code => $label): ?>
             <option value="<?= htmlspecialchars($code) ?>" <?= $locale === $code ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
             <?php endforeach; ?>
         </select>
         <p class="hint">Menentukan delimiter kolom, pemisah desimal/ribuan, dan format tanggal pada file CSV.</p>
 
-        <button type="submit">⬇ Unduh CSV</button>
+        <button type="submit" <?= $dbConnected ? '' : 'disabled' ?>>⬇ Unduh CSV</button>
         <p class="hint">Default: awal bulan ini sampai hari ini. Ubah sesuai kebutuhan lalu klik unduh.</p>
     </form>
 

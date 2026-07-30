@@ -215,5 +215,72 @@ class Settings
             self::set($key, $value);
         }
     }
+
+    /**
+     * Validator per key untuk restore backup JSON (lihat importBackupSettings()).
+     * Key yang tidak terdaftar di sini tidak akan pernah ditulis lewat restore,
+     * meski ada di file backup — mencegah key sembarangan/tidak dikenal masuk
+     * ke settings.db lewat file yang diunggah admin.
+     *
+     * @return array<string, callable(string): bool>
+     */
+    private static function restoreValidators(): array
+    {
+        return [
+            'kantor_filter'              => static fn(string $v): bool => true,
+            'pelanggan_filter'           => static fn(string $v): bool => true,
+            'item_prefix_filter'         => static fn(string $v): bool => true,
+            'tax_rate'                   => static fn(string $v): bool => is_numeric($v) && (float) $v >= 0,
+            'tax_source'                 => static fn(string $v): bool => in_array($v, self::TAX_SOURCES, true),
+            'database_only_skip_zero_tax' => static fn(string $v): bool => in_array($v, ['0', '1'], true),
+            'csv_locale'                 => static fn(string $v): bool => CsvLocale::isValid($v),
+            'dashboard_visible_fields'   => static fn(string $v): bool => true,
+            'db_host'                    => static fn(string $v): bool => true,
+            'db_port'                    => static fn(string $v): bool => $v === '' || ctype_digit($v),
+            'db_name'                    => static fn(string $v): bool => true,
+            'db_user'                    => static fn(string $v): bool => true,
+            'db_pass'                    => static fn(string $v): bool => true,
+        ];
+    }
+
+    /**
+     * Validasi & terapkan isi `settings` dari file backup JSON ke settings.db.
+     * Dipakai oleh admin_settings.php saat admin mengunggah file restore.
+     *
+     * Hanya key yang: (1) dikenal (ada di restoreValidators()), DAN
+     * (2) nilainya scalar dan lolos validator tipe/format key tsb,
+     * yang benar-benar ditulis. Key lain (tidak dikenal, tipe salah, atau
+     * format tidak valid) diabaikan dan dilaporkan lewat 'skipped', bukan
+     * menimpa settings.db dengan data yang berpotensi merusak/tidak sah.
+     *
+     * @param array $settings data mentah dari $data['settings'] hasil json_decode file backup.
+     * @return array{restored:int, skipped:string[]}
+     */
+    public static function importBackupSettings(array $settings): array
+    {
+        $validators = self::restoreValidators();
+        $restored = 0;
+        $skipped = [];
+
+        foreach ($settings as $key => $value) {
+            if (!is_string($key) || $key === '' || !is_scalar($value)) {
+                $skipped[] = is_string($key) && $key !== '' ? $key : '(key tidak valid)';
+                continue;
+            }
+            if (!isset($validators[$key])) {
+                $skipped[] = $key;
+                continue;
+            }
+            $strValue = (string) $value;
+            if (!$validators[$key]($strValue)) {
+                $skipped[] = $key;
+                continue;
+            }
+            self::set($key, $strValue);
+            $restored++;
+        }
+
+        return ['restored' => $restored, 'skipped' => $skipped];
+    }
 }
 

@@ -30,24 +30,42 @@ $restoreError = '';
 
 // Pulihkan pengaturan dari file backup JSON yang diunggah admin.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? '') === 'restore') {
-    if (!isset($_FILES['backup_file']) || $_FILES['backup_file']['error'] !== UPLOAD_ERR_OK) {
+    $file = $_FILES['backup_file'] ?? null;
+    $maxBackupBytes = 262144; // 256 KB - backup pengaturan hanya berisi key-value kecil
+
+    if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
         $restoreError = 'Pilih file backup (.json) yang valid untuk dipulihkan.';
+    } elseif (strtolower((string) pathinfo((string) $file['name'], PATHINFO_EXTENSION)) !== 'json') {
+        $restoreError = 'File harus berekstensi .json (hasil "Unduh Backup" dari aplikasi ini).';
+    } elseif ($file['size'] <= 0 || $file['size'] > $maxBackupBytes) {
+        $restoreError = 'Ukuran file tidak wajar untuk backup pengaturan (maks. 256 KB).';
     } else {
-        $raw  = (string) file_get_contents($_FILES['backup_file']['tmp_name']);
+        $raw  = (string) file_get_contents($file['tmp_name']);
         $data = json_decode($raw, true);
-        if (!is_array($data) || !isset($data['settings']) || !is_array($data['settings'])) {
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $restoreError = 'File bukan JSON yang valid: ' . json_last_error_msg();
+        } elseif (!is_array($data)) {
             $restoreError = 'Format file backup tidak dikenali. Gunakan file hasil "Unduh Backup" dari aplikasi ini.';
+        } elseif (($data['app'] ?? null) !== 'laporan-penjualan' || ($data['type'] ?? null) !== 'settings_backup') {
+            $restoreError = 'File ini bukan backup pengaturan dari aplikasi Laporan Penjualan.';
+        } elseif (!isset($data['version']) || !is_int($data['version'])) {
+            $restoreError = 'File backup tidak memiliki nomor versi yang valid.';
+        } elseif (!isset($data['settings']) || !is_array($data['settings'])) {
+            $restoreError = 'File backup tidak berisi data pengaturan ("settings").';
         } else {
-            $restored = 0;
-            foreach ($data['settings'] as $key => $value) {
-                if (!is_string($key) || $key === '' || !is_scalar($value)) {
-                    continue;
+            $result = Settings::importBackupSettings($data['settings']);
+            if ($result['restored'] === 0) {
+                $restoreError = 'Tidak ada pengaturan yang dipulihkan — semua item pada file '
+                    . 'tidak dikenali atau tidak valid.';
+            } else {
+                $restoreMessage = "Pengaturan berhasil dipulihkan dari backup ({$result['restored']} item). "
+                    . 'Periksa kembali nilai di bawah, termasuk Pengaturan Database.';
+                if ($result['skipped']) {
+                    $restoreMessage .= ' Diabaikan karena tidak dikenali/tidak valid: '
+                        . implode(', ', $result['skipped']) . '.';
                 }
-                Settings::set($key, (string) $value);
-                $restored++;
             }
-            $restoreMessage = "Pengaturan berhasil dipulihkan dari backup ({$restored} item). "
-                . 'Periksa kembali nilai di bawah, termasuk Pengaturan Database.';
         }
     }
 }

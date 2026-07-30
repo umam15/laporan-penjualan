@@ -129,14 +129,103 @@ mengambil asumsi berikut (sesuaikan `lib/SalesReport.php` bila berbeda):
 5. **Proc Laba (%)** = markup terhadap Pokok, **GPM** = margin terhadap Total
    — disamakan dengan laporan acuan `xReport.csv` (Analisa Laba Jual Detail).
 
-## Backup & Restore Pengaturan
+## Backup Pengaturan & Data (`data/settings.db`)
 
-Di menu **Pengaturan**, admin bisa mengunduh seluruh isi `settings.db` (filter,
-tarif pajak, format CSV, field Dashboard, termasuk kredensial database) sebagai
-satu file JSON, dan memulihkannya kembali lewat form upload di kartu yang sama.
-Restore menimpa nilai yang sedang aktif. File backup **tidak** berisi akun/
-password user staf — simpan file ini di tempat aman karena memuat kredensial
-database.
+Seluruh state aplikasi yang tidak berasal dari database transaksi (akun
+staf/admin **dan** pengaturan) tersimpan di satu file SQLite:
+`data/settings.db`. Ada dua lapis backup yang saling melengkapi — pahami
+bedanya sebelum menentukan mana yang cukup untuk kebutuhan Anda.
+
+### 1. Backup JSON lewat menu Pengaturan (ad hoc, hanya pengaturan)
+
+Di menu **Pengaturan**, admin bisa mengunduh seluruh isi tabel `settings`
+(filter, tarif pajak, format CSV, field Dashboard, termasuk kredensial
+database) sebagai satu file JSON, dan memulihkannya kembali lewat form
+upload di kartu yang sama. Restore menimpa nilai yang sedang aktif dan
+divalidasi (format JSON, identitas backup, tipe tiap field) sebelum
+diterapkan — lihat `CHANGELOG.md` v1.2.2.
+
+Cocok untuk: memindahkan/menyalin pengaturan antar instalasi, atau snapshot
+cepat sebelum mengubah konfigurasi berisiko. **Tidak** cocok sebagai
+satu-satunya backup, karena file ini **tidak berisi akun/password user
+staf** — hanya pengaturan.
+
+### 2. Backup rutin `data/settings.db` (terjadwal, seluruh data)
+
+Untuk pemulihan bencana (server hilang, disk rusak, `settings.db` terhapus
+tidak sengaja) dan supaya akun user staf tidak ikut hilang, `data/settings.db`
+perlu dibackup **secara terjadwal di level file**, terpisah dari fitur JSON
+di atas. Karena ini file SQLite yang bisa sedang ditulis saat backup
+berjalan, gunakan perintah `.backup` SQLite (aman dibaca saat aplikasi
+aktif) — jangan sekadar `cp` mentah, yang berisiko menyalin file di
+tengah penulisan.
+
+**Instalasi Docker** — `data/` disimpan di named volume `app_data`
+(lihat `docker-compose.yml`). Jadwalkan cron di host, contoh skrip harian:
+
+```bash
+#!/usr/bin/env bash
+# backup-settings-db.sh — jalankan lewat cron host, mis. tiap hari jam 02:00
+set -euo pipefail
+DEST="/path/ke/folder/backup"
+STAMP="$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$DEST"
+
+docker run --rm \
+  -v app_data:/data:ro \
+  -v "$DEST":/backup \
+  alpine:3 \
+  sh -c "apk add --no-cache sqlite >/dev/null && \
+         sqlite3 /data/settings.db \".backup '/backup/settings_${STAMP}.db'\""
+
+# Retensi: simpan 14 hari terakhir, hapus yang lebih lama
+find "$DEST" -name 'settings_*.db' -mtime +14 -delete
+```
+
+Contoh entri crontab di host (bukan di dalam container):
+```
+0 2 * * * /path/ke/backup-settings-db.sh >> /var/log/laporan-penjualan-backup.log 2>&1
+```
+
+**Instalasi Manual (tanpa Docker)** — jadwalkan cron langsung di server,
+memakai CLI `sqlite3` (paket `sqlite3` di Debian/Ubuntu: `apt install
+sqlite3`):
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+SRC="/path/ke/laporan-penjualan/data/settings.db"
+DEST="/path/ke/folder/backup"
+STAMP="$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$DEST"
+sqlite3 "$SRC" ".backup '${DEST}/settings_${STAMP}.db'"
+find "$DEST" -name 'settings_*.db' -mtime +14 -delete
+```
+
+### Rekomendasi retensi & penyimpanan
+
+- Minimal: backup harian, simpan 14 hari; tambah backup mingguan yang
+  disimpan lebih lama (mis. 3 bulan) bila memungkinkan.
+- Salin hasil backup ke lokasi **di luar server aplikasi** (storage
+  terpisah/off-site) — backup yang hanya ada di server yang sama tidak
+  melindungi dari kegagalan disk/server itu sendiri.
+- File backup `settings.db` memuat password hash user **dan** kredensial
+  database transaksi (bila diisi lewat menu Pengaturan) — perlakukan
+  dengan tingkat kerahasiaan yang sama seperti backup JSON: akses
+  terbatas, idealnya terenkripsi saat disimpan.
+
+### Restore dari backup file
+
+1. Hentikan aplikasi (matikan container / nonaktifkan sementara di web
+   server) agar tidak ada penulisan bersamaan ke `settings.db`.
+2. Ganti `data/settings.db` dengan file `.db` hasil backup yang dipilih.
+3. Pastikan kepemilikan/permission tetap writable oleh web server
+   (`chown www-data:www-data`, `chmod 664` pada Docker/Linux umum).
+4. Jalankan kembali aplikasi dan verifikasi login serta pengaturan.
+
+Untuk pemulihan pengaturan saja (tanpa downtime, akun user tidak berubah),
+gunakan restore JSON lewat menu Pengaturan (bagian 1) alih-alih mengganti
+seluruh file.
 
 ## Keamanan
 

@@ -8,7 +8,34 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 ## [Unreleased]
 
 ### Added
-- (isi di sini perubahan yang belum dirilis)
+- Dokumentasi strategi backup rutin `data/settings.db` di `README.md`
+  (bagian "Backup Pengaturan & Data"): menjelaskan perbedaan backup JSON
+  ad hoc (menu Pengaturan, hanya pengaturan) vs backup file terjadwal
+  (seluruh `settings.db`, termasuk akun user), lengkap dengan contoh
+  skrip cron memakai `sqlite3 .backup` untuk instalasi Docker maupun
+  manual, rekomendasi retensi, dan langkah restore.
+
+## [1.2.2]
+
+### Added
+- Dashboard (`index.php`) kini melakukan tes koneksi ringan ke database
+  transaksi (PostgreSQL) sebelum halaman dirender. Bila koneksi gagal,
+  staf melihat pesan peringatan yang ramah dan form unduh dinonaktifkan
+  (sebelumnya kegagalan baru terlihat setelah klik "Unduh CSV" lewat pesan
+  generik dari `export.php`). Admin melihat detail teknis error dan tautan
+  langsung ke menu **Pengaturan Database**; error asli tetap dicatat ke
+  `error_log`.
+- Varian `.alert.warning` pada `assets/style.css` untuk banner peringatan
+  di atas.
+- `TODO.md` berisi daftar tugas pengembangan (keamanan, kualitas kode,
+  fitur, deployment/ops) hasil review kode proyek.
+- Validasi ketat pada **restore backup JSON** pengaturan
+  (`admin_settings.php` + `Settings::importBackupSettings()`): cek
+  ekstensi `.json`, batas ukuran file (256 KB), validitas JSON, identitas
+  backup (`app`/`type`/`version`), lalu tiap key pengaturan divalidasi
+  lewat whitelist tipe/format sebelum ditulis ke `settings.db`. Key yang
+  tidak dikenal atau tidak valid diabaikan dan dilaporkan ke admin,
+  bukan langsung ditimpa seperti sebelumnya.
 
 ## [1.2.1]
 
@@ -54,6 +81,7 @@ Rilis awal aplikasi.
 - Dukungan Docker (`Dockerfile` + `docker-compose.yml`, PHP 8.2 + Apache).
 
 [Unreleased]: #
+[1.2.2]: #
 [1.2.1]: #
 [1.1.1]: #
 [1.0.0]: #
