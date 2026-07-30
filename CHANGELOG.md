@@ -5,7 +5,7 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengacu pada [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
-## [Unreleased]
+## [1.2.3]
 
 ### Added
 - Dokumentasi strategi backup rutin `data/settings.db` di `README.md`
