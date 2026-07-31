@@ -48,6 +48,8 @@ body {
 
 .navbar .app-version { color: #8fa9a1; font-size: 0.75rem; opacity: 0.8; }
 
+.login-box .app-version { text-align: center; color: #8fa9a1; font-size: 0.75rem; opacity: 0.8; margin-top: 16px; }
+
 .container {
     max-width: 900px;
     margin: 24px auto;

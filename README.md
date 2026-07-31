@@ -4,6 +4,12 @@ Aplikasi web PHP sederhana (tanpa framework) untuk mengunduh **Laporan Penjualan
 dalam format CSV dari aplikasi POS iPos5, mengambil data langsung dari database
 transaksi PostgreSQL, dengan autentikasi staf dan pengaturan yang bisa diubah admin.
 
+## Screenshot
+
+| Login Staf | Pengaturan (Admin) | Dashboard (Unduh Laporan) |
+|---|---|---|
+| ![Halaman login](docs/screenshots/login.png) | ![Halaman Pengaturan](docs/screenshots/pengaturan.png) | ![Dashboard unduh laporan](docs/screenshots/dashboard.png) |
+
 ## Kebutuhan
 
 - Docker & Docker Compose, **atau**

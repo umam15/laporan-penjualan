@@ -75,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
         <button type="submit"><?= $isSetup ? 'Buat Admin & Masuk' : 'Masuk' ?></button>
     </form>
+    <p class="app-version">v<?= htmlspecialchars(APP_VERSION) ?></p>
 </div>
 </body>
 </html>

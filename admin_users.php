@@ -14,8 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = (string) ($_POST['password'] ?? '');
         $role = (($_POST['role'] ?? 'staff') === 'admin') ? 'admin' : 'staff';
 
-        if ($username === '' || strlen($password) < 6) {
-            $error = 'Username wajib diisi dan password minimal 6 karakter.';
+        if ($username === '' || strlen($password) < 8) {
+            $error = 'Username wajib diisi dan password minimal 8 karakter.';
         } else {
             try {
                 $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'reset_password') {
         $id = (int) ($_POST['id'] ?? 0);
         $newPassword = (string) ($_POST['new_password'] ?? '');
-        if (strlen($newPassword) < 6) {
-            $error = 'Password baru minimal 6 karakter.';
+        if (strlen($newPassword) < 8) {
+            $error = 'Password baru minimal 8 karakter.';
         } else {
             $hash = password_hash($newPassword, PASSWORD_DEFAULT);
             Database::sqlite()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $id]);
@@ -80,7 +80,7 @@ $users = Database::sqlite()->query('SELECT id, username, role, active, created_a
                 </div>
                 <div>
                     <label>Password</label>
-                    <input type="password" name="password" required minlength="6">
+                    <input type="password" name="password" required minlength="8">
                 </div>
                 <div>
                     <label>Role</label>
@@ -114,7 +114,7 @@ $users = Database::sqlite()->query('SELECT id, username, role, active, created_a
                     <form method="post" class="inline">
                         <input type="hidden" name="action" value="reset_password">
                         <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
-                        <input type="password" name="new_password" placeholder="Password baru" minlength="6" required style="width:130px">
+                        <input type="password" name="new_password" placeholder="Password baru" minlength="8" required style="width:130px">
                         <button type="submit">Reset</button>
                     </form>
                     <form method="post" class="inline" onsubmit="return confirm('Hapus user ini?');">

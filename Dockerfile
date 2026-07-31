@@ -11,8 +11,13 @@ RUN a2enmod rewrite
 
 COPY . /var/www/html/
 
-# Folder data/ harus writable oleh web server (tempat settings.db dibuat otomatis)
-RUN chown -R www-data:www-data /var/www/html/data \
+# Set permission aman untuk seluruh app: readable oleh www-data,
+# tidak bergantung pada permission file di host saat build.
+# Lalu data/ dibuat writable khusus (tempat settings.db dibuat otomatis).
+RUN chown -R root:www-data /var/www/html \
+    && find /var/www/html -type d -exec chmod 750 {} \; \
+    && find /var/www/html -type f -exec chmod 640 {} \; \
+    && chown -R www-data:www-data /var/www/html/data \
     && chmod 775 /var/www/html/data
 
 EXPOSE 80

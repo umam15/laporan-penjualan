@@ -117,7 +117,7 @@ class Database
                     'kantor_filter'      => '',
                     'pelanggan_filter'   => '',
                     'item_prefix_filter' => '',
-                    'tax_rate'           => '0.5',
+                    'tax_rate'           => '0',
                     'csv_locale'         => 'id',
                 ];
                 $ins = self::$sqlite->prepare(

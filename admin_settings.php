@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? 'general') === '
     Settings::set('pelanggan_filter', trim((string) ($_POST['pelanggan_filter'] ?? '')));
     Settings::set('item_prefix_filter', trim((string) ($_POST['item_prefix_filter'] ?? '')));
 
-    $taxRaw = str_replace(',', '.', trim((string) ($_POST['tax_rate'] ?? '0.5')));
+    $taxRaw = str_replace(',', '.', trim((string) ($_POST['tax_rate'] ?? '0')));
     $csvLocaleRaw = trim((string) ($_POST['csv_locale'] ?? 'id'));
     $taxSourceRaw = trim((string) ($_POST['tax_source'] ?? 'manual'));
     $skipZeroTaxRaw = isset($_POST['database_only_skip_zero_tax']) ? '1' : '0';
@@ -224,8 +224,8 @@ try {
         </div>
 
         <label>Tarif Pajak Keluaran Manual (%)</label>
-        <input type="text" name="tax_rate" value="<?= htmlspecialchars((string) $taxRate) ?>" placeholder="0.5">
-        <p class="hint">Contoh: isi "0.5" untuk 0,5%. Dipakai bila Sumber Tarif Pajak = Manual, atau sebagai cadangan bila = Otomatis.</p>
+        <input type="text" name="tax_rate" value="<?= htmlspecialchars((string) $taxRate) ?>" placeholder="0">
+        <p class="hint">Contoh: isi "10" untuk 10%. Dipakai bila Sumber Tarif Pajak = Manual, atau sebagai cadangan bila = Otomatis.</p>
 
         <label>Format CSV (locale) Default</label>
         <select name="csv_locale">

@@ -17,8 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$u || !password_verify($current, $u['password_hash'])) {
         $error = 'Password saat ini salah.';
-    } elseif (strlen($new) < 6) {
-        $error = 'Password baru minimal 6 karakter.';
+    } elseif (strlen($new) < 8) {
+        $error = 'Password baru minimal 8 karakter.';
     } elseif ($new !== $confirm) {
         $error = 'Konfirmasi password tidak sama.';
     } else {
@@ -46,9 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label>Password Saat Ini</label>
         <input type="password" name="current_password" required>
         <label>Password Baru</label>
-        <input type="password" name="new_password" required minlength="6">
+        <input type="password" name="new_password" required minlength="8">
         <label>Konfirmasi Password Baru</label>
-        <input type="password" name="confirm_password" required minlength="6">
+        <input type="password" name="confirm_password" required minlength="8">
         <button type="submit">Simpan</button>
     </form>
 </div>

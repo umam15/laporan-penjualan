@@ -1,9 +1,24 @@
 # Changelog
 
-Semua perubahan penting pada proyek ini didokumentasikan di file ini.
+## [1.2.5]
 
-Format mengacu pada [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
+### Changed
+- Default **Tarif Pajak Keluaran Manual** diubah dari `10` (10%) menjadi
+  `0` (0%) — berlaku untuk instalasi baru (nilai awal yang dibuat saat
+  `settings.db` pertama kali dibuat) serta placeholder di form Pengaturan.
+  **Tidak** mengubah nilai pada instalasi yang sudah berjalan; admin yang
+  ingin memakai tarif tertentu tetap perlu mengisinya manual lewat menu
+  Pengaturan.
+
+## [1.2.4]
+
+### Fixed
+- Menyamakan minimal panjang password menjadi **8 karakter** di semua alur
+  (sebelumnya `login.php`/README mensyaratkan 8 karakter untuk admin
+  pertama, tapi `admin_users.php` — buat user baru & reset password admin
+  — dan `profile.php` — ganti password sendiri — hanya mensyaratkan 6).
+  Validasi server-side (`strlen`) dan atribut `minlength` pada form
+  keduanya diperbarui.
 
 ## [1.2.3]
 

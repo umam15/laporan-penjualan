@@ -67,10 +67,10 @@ class Settings
         return self::csvToArray(self::get('item_prefix_filter', ''));
     }
 
-    /** @return float tarif pajak keluaran dalam persen, mis. 0.5 berarti 0.5% */
+    /** @return float tarif pajak keluaran dalam persen, mis. 10 berarti 10% */
     public static function getTaxRate(): float
     {
-        return (float) self::get('tax_rate', '0.5');
+        return (float) self::get('tax_rate', '0');
     }
 
     /**

@@ -39,7 +39,7 @@ declare(strict_types=1);
  *  - Pajak Keluaran = Total(bersih) x tarif pajak. Tarif pajak bisa berasal dari
  *    tiga sumber tergantung pengaturan admin (Settings::getTaxSource()):
  *      - 'manual' (default): satu tarif tetap dari pengaturan (Settings::getTaxRate(),
- *        default 0.5%), dipakai sama untuk semua baris.
+ *        default 10%), dipakai sama untuk semua baris.
  *      - 'database': tarif diambil langsung dari kolom pajak yang sudah tersimpan
  *        pada transaksi itu sendiri saat transaksi dibuat, yaitu tbl_ikdt.pajak
  *        (persentase per baris item penjualan). Jika kolom itu kosong/0, jatuh ke
