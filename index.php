@@ -88,9 +88,43 @@ try {
         </select>
         <p class="hint">Menentukan delimiter kolom, pemisah desimal/ribuan, dan format tanggal pada file CSV.</p>
 
-        <button type="submit" <?= $dbConnected ? '' : 'disabled' ?>>⬇ Unduh CSV</button>
-        <p class="hint">Default: awal bulan ini sampai hari ini. Ubah sesuai kebutuhan lalu klik unduh.</p>
+        <div class="form-actions">
+            <button type="button" id="btnPreview" class="secondary" <?= $dbConnected ? '' : 'disabled' ?>>👁 Pratinjau</button>
+            <button type="submit" <?= $dbConnected ? '' : 'disabled' ?>>⬇ Unduh CSV</button>
+        </div>
+        <p class="hint">Default: awal bulan ini sampai hari ini. Ubah sesuai kebutuhan, klik <strong>Pratinjau</strong> untuk cek data dulu, lalu <strong>Unduh CSV</strong>.</p>
     </form>
+
+    <div class="card" id="previewCard" hidden>
+        <h3>Pratinjau Laporan</h3>
+        <div id="previewStatus" class="hint"></div>
+        <div id="previewResult" hidden>
+            <div class="preview-summary" id="previewSummary"></div>
+            <div class="table-responsive">
+                <table id="previewTable">
+                    <thead>
+                        <tr>
+                            <th>No Transaksi</th>
+                            <th>Tanggal</th>
+                            <th>Dept</th>
+                            <th>Kode Pelanggan</th>
+                            <th>Jumlah Item</th>
+                            <th>Kode Item</th>
+                            <th>Nama Item</th>
+                            <th>Pokok</th>
+                            <th>Total</th>
+                            <th>Pajak Keluaran</th>
+                            <th>Laba Kotor</th>
+                            <th>Proc Laba (%)</th>
+                            <th>GPM</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewTbody"></tbody>
+                </table>
+            </div>
+            <p class="hint" id="previewNote"></p>
+        </div>
+    </div>
 
     <div class="card info">
         <h3>Filter &amp; Pengaturan Aktif</h3>
@@ -134,5 +168,119 @@ try {
         </ul>
     </div>
 </div>
+
+<script>
+(function () {
+    var form          = document.querySelector('form[action="export.php"]');
+    var btnPreview    = document.getElementById('btnPreview');
+    var previewCard   = document.getElementById('previewCard');
+    var previewStatus = document.getElementById('previewStatus');
+    var previewResult = document.getElementById('previewResult');
+    var previewSummary= document.getElementById('previewSummary');
+    var previewTbody  = document.getElementById('previewTbody');
+    var previewNote   = document.getElementById('previewNote');
+
+    if (!form || !btnPreview) {
+        return;
+    }
+
+    var COLUMNS = [
+        'notransaksi', 'tanggal', 'dept', 'kodesupel', 'jumlah_item',
+        'kodeitem', 'namaitem', 'pokok', 'total', 'pajak_keluaran',
+        'laba_kotor', 'proc_laba', 'gpm'
+    ];
+
+    function clearPreview() {
+        previewResult.hidden = true;
+        previewTbody.innerHTML = '';
+        previewSummary.innerHTML = '';
+        previewNote.textContent = '';
+    }
+
+    function summaryItem(label, value) {
+        var span = document.createElement('span');
+        span.className = 'preview-summary-item';
+        var strong = document.createElement('strong');
+        strong.textContent = label + ': ';
+        span.appendChild(strong);
+        span.appendChild(document.createTextNode(value));
+        return span;
+    }
+
+    btnPreview.addEventListener('click', function () {
+        var start  = form.elements['start'].value;
+        var end    = form.elements['end'].value;
+        var locale = form.elements['locale'].value;
+
+        if (!start || !end) {
+            previewCard.hidden = false;
+            clearPreview();
+            previewStatus.textContent = 'Isi tanggal awal dan tanggal akhir terlebih dahulu.';
+            return;
+        }
+
+        previewCard.hidden = false;
+        clearPreview();
+        previewStatus.textContent = 'Memuat pratinjau…';
+        btnPreview.disabled = true;
+
+        var url = 'preview.php?start=' + encodeURIComponent(start) +
+                  '&end=' + encodeURIComponent(end) +
+                  '&locale=' + encodeURIComponent(locale);
+
+        fetch(url, { credentials: 'same-origin' })
+            .then(function (res) {
+                return res.json().then(function (data) {
+                    return { status: res.status, data: data };
+                });
+            })
+            .then(function (r) {
+                btnPreview.disabled = false;
+                if (!r.data.ok) {
+                    previewStatus.textContent = r.data.error || 'Gagal memuat pratinjau.';
+                    return;
+                }
+
+                var d = r.data;
+
+                if (d.total_count === 0) {
+                    previewStatus.textContent = 'Tidak ada data penjualan pada rentang tanggal & filter yang dipilih.';
+                    return;
+                }
+
+                previewStatus.textContent = '';
+
+                previewSummary.appendChild(summaryItem('Jumlah Baris', String(d.total_count)));
+                previewSummary.appendChild(summaryItem('Total Pokok', d.totals.pokok));
+                previewSummary.appendChild(summaryItem('Total Penjualan', d.totals.total));
+                previewSummary.appendChild(summaryItem('Total Pajak Keluaran', d.totals.pajak_keluaran));
+                previewSummary.appendChild(summaryItem('Total Laba Kotor', d.totals.laba_kotor));
+
+                d.rows.forEach(function (row) {
+                    var tr = document.createElement('tr');
+                    COLUMNS.forEach(function (col) {
+                        var td = document.createElement('td');
+                        td.textContent = row[col] !== undefined ? row[col] : '';
+                        tr.appendChild(td);
+                    });
+                    previewTbody.appendChild(tr);
+                });
+
+                if (d.truncated) {
+                    previewNote.textContent = 'Menampilkan ' + d.shown_count + ' dari ' + d.total_count +
+                        ' baris. Klik "Unduh CSV" untuk mendapatkan data lengkap.';
+                } else {
+                    previewNote.textContent = 'Menampilkan seluruh ' + d.total_count + ' baris yang cocok.';
+                }
+
+                previewResult.hidden = false;
+            })
+            .catch(function () {
+                btnPreview.disabled = false;
+                previewStatus.textContent = 'Terjadi kesalahan jaringan saat memuat pratinjau. Silakan coba lagi.';
+            });
+    });
+})();
+</script>
 </body>
 </html>

@@ -116,6 +116,11 @@ button:hover { background: var(--primary-dark); }
 button.danger { background: var(--danger); }
 button.danger:hover { background: #922b21; }
 
+button.secondary { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+button.secondary:hover { background: #eaf4f1; }
+
+.form-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -186,6 +191,24 @@ table th { color: var(--muted); font-weight: 600; }
 }
 .table-responsive table { margin-top: 0; min-width: 480px; }
 
+/* Pratinjau laporan (index.php): ringkasan total dalam bentuk "chip"
+   di atas tabel pratinjau. */
+.preview-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 4px 0 12px;
+}
+.preview-summary-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+.preview-summary-item strong { color: var(--muted); font-weight: 600; }
+
 /* Mobile (ponsel) */
 @media (max-width: 640px) {
     .navbar { padding: 10px 14px; gap: 6px; }
@@ -201,9 +224,11 @@ table th { color: var(--muted); font-weight: 600; }
     /* Tombol aksi utama (Simpan/Unduh/Tambah) full-width agar mudah
        disentuh, tanpa memengaruhi tombol kecil di baris tabel (.actions). */
     form.card > button[type="submit"],
-    .card > form > button[type="submit"] {
+    .card > form > button[type="submit"],
+    .form-actions {
         width: 100%;
     }
+    .form-actions button { flex: 1; }
 
     .actions { gap: 6px; }
     .actions form.inline input[type="password"] { width: 100% !important; min-width: 0; }

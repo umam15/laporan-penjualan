@@ -1,5 +1,28 @@
 # Changelog
 
+Semua perubahan penting pada proyek ini didokumentasikan di file ini.
+
+Format mengacu pada [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
+
+## [1.3.0]
+
+### Added
+- Tombol **Pratinjau** di Dashboard, di samping tombol "Unduh CSV". Memanggil
+  endpoint JSON baru `preview.php` dan menampilkan hasilnya langsung di
+  halaman (tanpa reload) sebelum staf memutuskan mengunduh:
+  - Tabel hingga **50 baris pertama** dengan kolom yang sama seperti CSV,
+    diformat sesuai locale (`id`/`en`) yang dipilih.
+  - Ringkasan total (jumlah baris, Pokok, Total, Pajak Keluaran, Laba Kotor)
+    dihitung dari **seluruh** baris yang cocok dengan filter tanggal &
+    pengaturan admin — bukan hanya baris yang ditampilkan di tabel.
+  - Keterangan jumlah baris ditampilkan vs. total, dan pesan bila tidak ada
+    data pada rentang yang dipilih.
+  - Memakai logika perhitungan (`SalesReport::rows()`) dan pengaturan filter
+    yang identik dengan `export.php`, sehingga angka pratinjau selalu
+    konsisten dengan file CSV yang akan diunduh.
+- `SalesReport::preview()` di `lib/SalesReport.php`.
+
 ## [1.2.5]
 
 ### Changed

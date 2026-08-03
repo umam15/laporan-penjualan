@@ -268,6 +268,76 @@ class SalesReport
     }
 
     /**
+     * Hitung pratinjau laporan tanpa mengunduh file: sejumlah baris pertama
+     * (untuk ditampilkan sebagai tabel) plus ringkasan total atas SELURUH
+     * baris yang cocok dengan filter (bukan hanya baris yang ditampilkan).
+     *
+     * Memakai generator rows() yang sama dengan streamCsv(), sehingga angka
+     * pratinjau selalu konsisten dengan isi file CSV yang akan diunduh.
+     * Karena ringkasan total butuh menjumlahkan seluruh baris, biaya query
+     * sama dengan proses unduh CSV (tanpa penulisan file) - tidak ada query
+     * COUNT/SUM terpisah yang bisa berbeda hasil dari logika filter di atas.
+     *
+     * @return array{
+     *   rows: list<array<string,string>>,
+     *   shown_count: int,
+     *   total_count: int,
+     *   truncated: bool,
+     *   totals: array{pokok:string, total:string, pajak_keluaran:string, laba_kotor:string}
+     * }
+     */
+    public static function preview(string $startDate, string $endDate, string $localeCode = 'id', int $limit = 50): array
+    {
+        $profile = CsvLocale::profile(CsvLocale::isValid($localeCode) ? $localeCode : 'id');
+
+        $rows       = [];
+        $count      = 0;
+        $sumPokok   = 0.0;
+        $sumTotal   = 0.0;
+        $sumPajak   = 0.0;
+        $sumLaba    = 0.0;
+
+        foreach (self::rows($startDate, $endDate) as $row) {
+            $count++;
+            $sumPokok += $row['pokok'];
+            $sumTotal += $row['total'];
+            $sumPajak += $row['pajak_keluaran'];
+            $sumLaba  += $row['laba_kotor'];
+
+            if ($count <= $limit) {
+                $rows[] = [
+                    'notransaksi'    => $row['notransaksi'],
+                    'tanggal'        => CsvLocale::date($profile, $row['tanggal']),
+                    'dept'           => $row['dept'],
+                    'kodesupel'      => $row['kodesupel'],
+                    'jumlah_item'    => CsvLocale::number($profile, $row['jumlah_item'], 3),
+                    'kodeitem'       => $row['kodeitem'],
+                    'namaitem'       => $row['namaitem'],
+                    'pokok'          => CsvLocale::number($profile, $row['pokok'], 2),
+                    'total'          => CsvLocale::number($profile, $row['total'], 2),
+                    'pajak_keluaran' => CsvLocale::number($profile, $row['pajak_keluaran'], 2),
+                    'laba_kotor'     => CsvLocale::number($profile, $row['laba_kotor'], 2),
+                    'proc_laba'      => CsvLocale::number($profile, $row['proc_laba'], 2),
+                    'gpm'            => CsvLocale::number($profile, $row['gpm'], 2),
+                ];
+            }
+        }
+
+        return [
+            'rows'        => $rows,
+            'shown_count' => count($rows),
+            'total_count' => $count,
+            'truncated'   => $count > $limit,
+            'totals'      => [
+                'pokok'          => CsvLocale::number($profile, $sumPokok, 2),
+                'total'          => CsvLocale::number($profile, $sumTotal, 2),
+                'pajak_keluaran' => CsvLocale::number($profile, $sumPajak, 2),
+                'laba_kotor'     => CsvLocale::number($profile, $sumLaba, 2),
+            ],
+        ];
+    }
+
+    /**
      * Kirim laporan langsung sebagai file CSV ke browser (streaming, hemat memori).
      *
      * @param string $localeCode Kode format locale CSV ('id' atau 'en'). Menentukan

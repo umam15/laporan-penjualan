@@ -22,7 +22,8 @@ transaksi PostgreSQL, dengan autentikasi staf dan pengaturan yang bisa diubah ad
 config.php          # lokasi settings.db (tidak berisi kredensial database)
 bootstrap.php        # inisialisasi session, autoload, koneksi DB
 login.php / logout.php
-index.php            # dashboard: filter tanggal + tombol unduh
+index.php            # dashboard: filter tanggal + tombol pratinjau & unduh
+preview.php          # endpoint JSON: pratinjau data sebelum unduh CSV
 export.php           # endpoint streaming CSV
 admin_settings.php   # admin: filter data, tarif pajak, koneksi database
 admin_users.php       # admin: kelola user staf
@@ -74,7 +75,11 @@ di `data/settings.db` (bukan di source code):
 1. Login.
 2. Di Dashboard, pilih rentang tanggal (default: awal bulan berjalan s.d. hari
    ini) dan format CSV (locale) bila ingin berbeda dari default admin.
-3. Klik **Unduh CSV**.
+3. (Opsional) Klik **Pratinjau** untuk melihat hingga 50 baris pertama beserta
+   ringkasan total (jumlah baris, Pokok, Total, Pajak Keluaran, Laba Kotor)
+   dari seluruh data yang cocok dengan filter — tanpa mengunduh file — untuk
+   memastikan rentang tanggal & data sudah sesuai.
+4. Klik **Unduh CSV**.
 
 ## Format Locale CSV
 
