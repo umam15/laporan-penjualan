@@ -4,7 +4,17 @@ declare(strict_types=1);
 /** Versi aplikasi saat ini, ditampilkan di navbar. Update di setiap rilis. */
 define('APP_VERSION', '1.2.5');
 
-session_start();
+// Hardening cookie session: HttpOnly + SameSite=Lax. Secure hanya bila request
+// memang HTTPS, sehingga deployment HTTP lokal/Docker tetap berfungsi.
+if (session_status() === PHP_SESSION_NONE) {
+    $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    session_set_cookie_params([
+        'httponly' => true,
+        'secure'   => $https,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+}
 date_default_timezone_set('Asia/Jakarta');
 
 error_reporting(E_ALL);
