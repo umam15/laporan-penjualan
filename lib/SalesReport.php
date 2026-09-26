@@ -74,9 +74,15 @@ class SalesReport
      */
     public static function buildQuery(string $startDate, string $endDate): array
     {
+        // Gunakan rentang [start, end-exclusive), bukan BETWEEN 23:59:59.
+        // Ini tetap ramah index dan tidak kehilangan timestamp dengan pecahan detik.
+        $endExclusive = (new \DateTimeImmutable($endDate))
+            ->modify('+1 day')
+            ->format('Y-m-d');
+
         $params = [
-            ':start' => $startDate . ' 00:00:00',
-            ':end'   => $endDate . ' 23:59:59',
+            ':start'        => $startDate . ' 00:00:00',
+            ':endExclusive' => $endExclusive . ' 00:00:00',
         ];
 
         $typePlaceholders = [];
@@ -87,7 +93,7 @@ class SalesReport
         }
 
         $where = [
-            'h.tanggal BETWEEN :start AND :end',
+            'h.tanggal >= :start AND h.tanggal < :endExclusive',
             'h.tipe IN (' . implode(',', $typePlaceholders) . ')',
         ];
 
@@ -151,14 +157,13 @@ class SalesReport
             INNER JOIN tbl_ikdt d ON d.notransaksi = h.notransaksi
             LEFT JOIN tbl_item i ON i.kodeitem = d.kodeitem
             LEFT JOIN tbl_kantor k ON k.kodekantor = h.kodekantor
-            LEFT JOIN (
+            LEFT JOIN LATERAL (
                 SELECT
-                    iddetailtrs,
-                    SUM(jumlahdasar) AS gross_qty,
-                    SUM(jumlahdasar * hargadasar) AS gross_cost
-                FROM tbl_item_ik
-                GROUP BY iddetailtrs
-            ) ik ON ik.iddetailtrs = d.iddetail
+                    SUM(ii.jumlahdasar) AS gross_qty,
+                    SUM(ii.jumlahdasar * ii.hargadasar) AS gross_cost
+                FROM tbl_item_ik ii
+                WHERE ii.iddetailtrs = d.iddetail
+            ) ik ON TRUE
             WHERE " . implode(' AND ', $where) . '
             ORDER BY h.tanggal, h.notransaksi, d.nobaris, d.iddetail
         ';
