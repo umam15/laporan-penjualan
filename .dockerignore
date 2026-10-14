@@ -1,6 +1,12 @@
 .git
 .gitignore
+.github
 sample
 data/*.db
 README.md
 LICENSE
+CHANGELOG.md
+docs
+Dockerfile
+docker-compose.yml
+.dockerignore

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /** Versi aplikasi saat ini, ditampilkan di navbar. Update di setiap rilis. */
-define('APP_VERSION', '1.2.5');
+define('APP_VERSION', '1.3.1');
 
 // Hardening cookie session: HttpOnly + SameSite=Lax. Secure hanya bila request
 // memang HTTPS, sehingga deployment HTTP lokal/Docker tetap berfungsi.
@@ -24,8 +24,10 @@ $config = require __DIR__ . '/config.php';
 
 require __DIR__ . '/lib/Database.php';
 require __DIR__ . '/lib/Auth.php';
+require __DIR__ . '/lib/Csrf.php';
 require __DIR__ . '/lib/CsvLocale.php';
 require __DIR__ . '/lib/Settings.php';
 require __DIR__ . '/lib/SalesReport.php';
 
 Database::init($config);
+Csrf::guard(); // semua POST wajib membawa token CSRF sesi

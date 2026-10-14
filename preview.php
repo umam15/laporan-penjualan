@@ -1,26 +1,26 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/bootstrap.php';
-Auth::requireLogin();
-
 header('Content-Type: application/json; charset=UTF-8');
+
+// Endpoint JSON: sesi habis dijawab 401 (bukan redirect HTML) agar Dashboard bisa menampilkan pesan jelas.
+if (!Auth::check()) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'error' => 'Sesi berakhir. Muat ulang halaman dan login kembali.']);
+    exit;
+}
 
 $start  = $_GET['start'] ?? null;
 $end    = $_GET['end'] ?? null;
 $locale = $_GET['locale'] ?? Settings::getCsvLocale();
-
-if (!$start || !$end
-    || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $start)
-    || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end)
-) {
-    http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'Parameter tanggal tidak valid. Gunakan format YYYY-MM-DD.']);
-    exit;
+if (!is_string($locale)) {
+    $locale = '';
 }
 
-if ($start > $end) {
+$rangeError = SalesReport::validateRange(is_string($start) ? $start : null, is_string($end) ? $end : null);
+if ($rangeError !== null) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => 'Tanggal awal tidak boleh lebih besar dari tanggal akhir.']);
+    echo json_encode(['ok' => false, 'error' => $rangeError]);
     exit;
 }
 

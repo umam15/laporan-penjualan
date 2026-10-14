@@ -38,11 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim((string) ($_POST['username'] ?? ''));
         $password = (string) ($_POST['password'] ?? '');
 
-        if (Auth::attempt($username, $password)) {
+        if (Auth::isThrottled($username)) {
+            $error = 'Terlalu banyak percobaan login gagal. Coba lagi dalam 15 menit.';
+        } elseif (Auth::attempt($username, $password)) {
             header('Location: index.php');
             exit;
+        } else {
+            $error = 'Username atau password salah.';
         }
-        $error = 'Username atau password salah.';
     }
 }
 ?>
@@ -65,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
     <?php if ($error): ?><div class="alert error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <form method="post">
+        <?= Csrf::field() ?>
         <label>Username</label>
         <input type="text" name="username" required autofocus minlength="<?= $isSetup ? 3 : 1 ?>" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
         <label>Password</label>

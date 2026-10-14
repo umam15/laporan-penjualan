@@ -13,7 +13,7 @@ $currentPage = basename($_SERVER['SCRIPT_NAME']);
         <?php endif; ?>
         <a href="profile.php" class="<?= $currentPage === 'profile.php' ? 'active' : '' ?>">Profil</a>
         <span class="user">👤 <?= htmlspecialchars($user['username'] ?? '') ?> (<?= htmlspecialchars($user['role'] ?? '') ?>)</span>
-        <a href="logout.php" class="logout">Keluar</a>
+        <form method="post" action="logout.php" class="logout-form"><?= Csrf::field() ?><button type="submit">Keluar</button></form>
         <span class="app-version">v<?= htmlspecialchars(APP_VERSION) ?></span>
     </div>
 </nav>

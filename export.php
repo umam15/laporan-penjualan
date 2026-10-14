@@ -6,18 +6,14 @@ Auth::requireLogin();
 $start  = $_GET['start'] ?? null;
 $end    = $_GET['end'] ?? null;
 $locale = $_GET['locale'] ?? Settings::getCsvLocale();
-
-if (!$start || !$end
-    || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $start)
-    || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end)
-) {
-    http_response_code(400);
-    die('Parameter tanggal tidak valid. Gunakan format YYYY-MM-DD.');
+if (!is_string($locale)) {
+    $locale = '';
 }
 
-if ($start > $end) {
+$rangeError = SalesReport::validateRange(is_string($start) ? $start : null, is_string($end) ? $end : null);
+if ($rangeError !== null) {
     http_response_code(400);
-    die('Tanggal awal tidak boleh lebih besar dari tanggal akhir.');
+    die($rangeError);
 }
 
 if (!CsvLocale::isValid($locale)) {

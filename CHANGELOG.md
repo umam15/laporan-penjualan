@@ -5,6 +5,39 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengacu pada [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [1.3.1]
+
+### Security
+- Perlindungan **CSRF** terpusat: semua permintaan POST wajib membawa token
+  sesi (`lib/Csrf.php`, diperiksa di `bootstrap.php`). **Keluar** kini lewat
+  POST, bukan tautan.
+- Sesi divalidasi ulang ke database di setiap permintaan: user yang
+  dinonaktifkan/dihapus langsung kehilangan akses, peran selalu terbaru.
+  Ditambah batas **idle 1 jam** dan **batas mutlak 12 jam**; reset/ganti
+  password mencabut sesi lain milik akun itu.
+- **Batas login gagal**: 5 kali per username atau 20 kali per IP dalam
+  15 menit.
+- Admin aktif terakhir tidak bisa dinonaktifkan atau dihapus.
+- Docker: `data/`, `lib/`, dan `partials/` ditolak langsung oleh konfigurasi
+  Apache (tidak lagi bergantung pada `.htaccess`); tanpa daftar isi folder;
+  versi server/PHP disembunyikan; `Dockerfile`, compose, `.github/`,
+  `CHANGELOG.md`, dan `docs/` tidak ikut ke dalam image.
+
+### Fixed
+- Tanggal dengan format benar tetapi tidak nyata (mis. `2026-02-31`) kini
+  ditolak (400) sebelum file CSV dikirim; rentang dibatasi maksimum 366 hari
+  untuk unduhan dan pratinjau.
+- Parameter `start`/`end`/`locale` berbentuk larik tidak lagi menyebabkan
+  galat 500.
+- Pratinjau menjawab 401 (JSON) saat sesi berakhir, bukan mengalihkan ke HTML.
+- Versi di navbar kembali sama dengan rilis (sebelumnya masih `1.2.5`).
+
+### Changed
+- Mencakup tiga perubahan sejak `v1.3.0`: optimasi rentang tanggal dan
+  pencarian HPP, pengerasan cookie sesi, serta dokumen rencana optimasi.
+- Skema `settings.db` bertambah otomatis (kolom `users.session_version`,
+  tabel `login_attempts`); data yang ada tidak berubah.
+
 ## [1.3.0]
 
 ### Added

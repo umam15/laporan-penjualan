@@ -9,7 +9,11 @@ $defaultEnd   = date('Y-m-d');  // hari ini
 $startDate = $_GET['start'] ?? $defaultStart;
 $endDate   = $_GET['end'] ?? $defaultEnd;
 $locale    = $_GET['locale'] ?? Settings::getCsvLocale();
-if (!CsvLocale::isValid($locale)) {
+if (!is_string($startDate) || !is_string($endDate)) {
+    $startDate = $defaultStart;
+    $endDate   = $defaultEnd;
+}
+if (!is_string($locale) || !CsvLocale::isValid($locale)) {
     $locale = Settings::getCsvLocale();
 }
 

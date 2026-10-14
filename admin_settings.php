@@ -185,6 +185,7 @@ try {
     <?php if ($error): ?><div class="alert error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
     <form method="post" class="card">
+        <?= Csrf::field() ?>
         <input type="hidden" name="form" value="general">
         <label>Filter Kantor</label>
         <input type="text" name="kantor_filter" value="<?= htmlspecialchars($kantorFilter) ?>" placeholder="cth: KTR01,KTR02">
@@ -261,6 +262,7 @@ try {
         <?php if ($dbMessage): ?><div class="alert success"><?= htmlspecialchars($dbMessage) ?></div><?php endif; ?>
         <?php if ($dbError): ?><div class="alert error"><?= htmlspecialchars($dbError) ?></div><?php endif; ?>
         <form method="post">
+            <?= Csrf::field() ?>
             <input type="hidden" name="form" value="db">
 
             <label>Host</label>
@@ -302,6 +304,7 @@ try {
         </form>
 
         <form method="post" enctype="multipart/form-data">
+            <?= Csrf::field() ?>
             <input type="hidden" name="form" value="restore">
             <label>Pulihkan dari File Backup (.json)</label>
             <input type="file" name="backup_file" accept="application/json,.json" required>

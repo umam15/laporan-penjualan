@@ -22,9 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($new !== $confirm) {
         $error = 'Konfirmasi password tidak sama.';
     } else {
-        $hash = password_hash($new, PASSWORD_DEFAULT);
-        Database::sqlite()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $u['id']]);
-        $message = 'Password berhasil diubah.';
+        Auth::setPassword((int) $u['id'], $new); // sesi lain akun ini dicabut, sesi ini tetap
+        $message = 'Password berhasil diubah. Sesi login lain untuk akun ini dicabut.';
     }
 }
 ?>
@@ -43,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if ($message): ?><div class="alert success"><?= htmlspecialchars($message) ?></div><?php endif; ?>
     <?php if ($error): ?><div class="alert error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <form method="post" class="card">
+        <?= Csrf::field() ?>
         <label>Password Saat Ini</label>
         <input type="password" name="current_password" required>
         <label>Password Baru</label>

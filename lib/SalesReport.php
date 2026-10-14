@@ -69,6 +69,36 @@ class SalesReport
     /** Tipe transaksi tbl_ikhd yang dianggap sebagai penjualan */
     private const SALES_TYPES = ['JL', 'KSR', 'TRBCIMPJL', 'TRBCIMPKSR'];
 
+    /** Rentang tanggal maksimum (hari, inklusif) per unduhan/pratinjau. */
+    public const MAX_RANGE_DAYS = 366;
+
+    /**
+     * Validasi rentang tanggal (YYYY-MM-DD, tanggal kalender nyata, awal <= akhir,
+     * maksimum MAX_RANGE_DAYS hari). Dipanggil SEBELUM header apa pun dikirim.
+     *
+     * @return string|null Pesan galat, atau null bila valid.
+     */
+    public static function validateRange(?string $start, ?string $end): ?string
+    {
+        $parsed = [];
+        foreach ([$start, $end] as $value) {
+            if (!is_string($value) || !preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $m)
+                || !checkdate((int) $m[2], (int) $m[3], (int) $m[1])
+            ) {
+                return 'Parameter tanggal tidak valid. Gunakan tanggal nyata berformat YYYY-MM-DD.';
+            }
+            $parsed[] = new \DateTimeImmutable($value);
+        }
+
+        if ($parsed[0] > $parsed[1]) {
+            return 'Tanggal awal tidak boleh lebih besar dari tanggal akhir.';
+        }
+        if ((int) $parsed[0]->diff($parsed[1])->days + 1 > self::MAX_RANGE_DAYS) {
+            return 'Rentang tanggal maksimum ' . self::MAX_RANGE_DAYS . ' hari.';
+        }
+        return null;
+    }
+
     /**
      * @return array{0: string, 1: array} [$sql, $params]
      */

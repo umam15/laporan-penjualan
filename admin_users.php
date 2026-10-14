@@ -29,22 +29,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'toggle') {
         $id = (int) ($_POST['id'] ?? 0);
-        Database::sqlite()->prepare('UPDATE users SET active = 1 - active WHERE id = ?')->execute([$id]);
-        $message = 'Status user diperbarui.';
+        $stmt = Database::sqlite()->prepare('SELECT role, active FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        $target = $stmt->fetch();
+        if (!$target) {
+            $error = 'User tidak ditemukan.';
+        } elseif ($target['role'] === 'admin' && (int) $target['active'] === 1
+            && Auth::activeAdminCountExcluding($id) === 0
+        ) {
+            $error = 'Tidak bisa menonaktifkan admin aktif terakhir.';
+        } else {
+            Database::sqlite()->prepare('UPDATE users SET active = 1 - active WHERE id = ?')->execute([$id]);
+            $message = 'Status user diperbarui.';
+        }
     } elseif ($action === 'reset_password') {
         $id = (int) ($_POST['id'] ?? 0);
         $newPassword = (string) ($_POST['new_password'] ?? '');
-        if (strlen($newPassword) < 8) {
+        $stmt = Database::sqlite()->prepare('SELECT COUNT(*) FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        if ((int) $stmt->fetchColumn() === 0) {
+            $error = 'User tidak ditemukan.';
+        } elseif (strlen($newPassword) < 8) {
             $error = 'Password baru minimal 8 karakter.';
         } else {
-            $hash = password_hash($newPassword, PASSWORD_DEFAULT);
-            Database::sqlite()->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $id]);
-            $message = 'Password berhasil direset.';
+            Auth::setPassword($id, $newPassword); // sekaligus mencabut sesi user tsb
+            $message = 'Password berhasil direset. Sesi login user tersebut dicabut.';
         }
     } elseif ($action === 'delete') {
         $id = (int) ($_POST['id'] ?? 0);
+        $stmt = Database::sqlite()->prepare('SELECT role, active FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+        $target = $stmt->fetch();
         if ($id === (int) Auth::user()['id']) {
             $error = 'Tidak bisa menghapus akun yang sedang digunakan.';
+        } elseif (!$target) {
+            $error = 'User tidak ditemukan.';
+        } elseif ($target['role'] === 'admin' && (int) $target['active'] === 1
+            && Auth::activeAdminCountExcluding($id) === 0
+        ) {
+            $error = 'Tidak bisa menghapus admin aktif terakhir.';
         } else {
             Database::sqlite()->prepare('DELETE FROM users WHERE id = ?')->execute([$id]);
             $message = 'User berhasil dihapus.';
@@ -72,6 +95,7 @@ $users = Database::sqlite()->query('SELECT id, username, role, active, created_a
     <div class="card">
         <h3>Tambah User Baru</h3>
         <form method="post">
+            <?= Csrf::field() ?>
             <input type="hidden" name="action" value="create">
             <div class="form-row">
                 <div>
@@ -107,17 +131,20 @@ $users = Database::sqlite()->query('SELECT id, username, role, active, created_a
                 <td><?= htmlspecialchars($u['created_at']) ?></td>
                 <td class="actions">
                     <form method="post" class="inline">
+                        <?= Csrf::field() ?>
                         <input type="hidden" name="action" value="toggle">
                         <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
                         <button type="submit"><?= $u['active'] ? 'Nonaktifkan' : 'Aktifkan' ?></button>
                     </form>
                     <form method="post" class="inline">
+                        <?= Csrf::field() ?>
                         <input type="hidden" name="action" value="reset_password">
                         <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
                         <input type="password" name="new_password" placeholder="Password baru" minlength="8" required style="width:130px">
                         <button type="submit">Reset</button>
                     </form>
                     <form method="post" class="inline" onsubmit="return confirm('Hapus user ini?');">
+                        <?= Csrf::field() ?>
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
                         <button type="submit" class="danger">Hapus</button>

@@ -44,6 +44,20 @@ body {
 
 .navbar a.logout { color: #ffd7d0; }
 
+/* Logout lewat POST: tombol tampil seperti tautan navbar */
+.navbar form.logout-form { margin: 0; display: inline; }
+.navbar form.logout-form button {
+    background: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    color: #ffd7d0;
+    font: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
 .navbar .user { color: #b9d3cb; font-size: 0.85rem; }
 
 .navbar .app-version { color: #8fa9a1; font-size: 0.75rem; opacity: 0.8; }

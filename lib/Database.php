@@ -112,6 +112,24 @@ class Database
                 value TEXT
             )");
 
+            // Migrasi skema bertahap (PRAGMA user_version): v1 = session_version
+            // pada users (pencabutan sesi) + tabel login_attempts (batas login).
+            $schemaVersion = (int) self::$sqlite->query('PRAGMA user_version')->fetchColumn();
+            if ($schemaVersion < 1) {
+                $cols = array_column(self::$sqlite->query('PRAGMA table_info(users)')->fetchAll(), 'name');
+                if (!in_array('session_version', $cols, true)) {
+                    self::$sqlite->exec('ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0');
+                }
+                self::$sqlite->exec('CREATE TABLE IF NOT EXISTS login_attempts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    ip TEXT NOT NULL,
+                    attempted_at INTEGER NOT NULL
+                )');
+                self::$sqlite->exec('CREATE INDEX IF NOT EXISTS idx_login_attempts_time ON login_attempts (attempted_at)');
+                self::$sqlite->exec('PRAGMA user_version = 1');
+            }
+
             if ($isNew) {
                 $defaults = [
                     'kantor_filter'      => '',
