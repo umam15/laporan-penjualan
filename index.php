@@ -115,6 +115,7 @@ try {
                             <th>Jumlah Item</th>
                             <th>Kode Item</th>
                             <th>Nama Item</th>
+                            <th>Jenis</th>
                             <th>Pokok</th>
                             <th>Total</th>
                             <th>Pajak Keluaran</th>
@@ -190,7 +191,7 @@ try {
 
     var COLUMNS = [
         'notransaksi', 'tanggal', 'dept', 'kodesupel', 'jumlah_item',
-        'kodeitem', 'namaitem', 'pokok', 'total', 'pajak_keluaran',
+        'kodeitem', 'namaitem', 'jenis', 'pokok', 'total', 'pajak_keluaran',
         'laba_kotor', 'proc_laba', 'gpm'
     ];
 

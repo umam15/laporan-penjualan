@@ -114,6 +114,20 @@ class Settings
     }
 
     /**
+     * Mode tampilan kolom "Jenis" pada laporan (Dashboard, pratinjau, CSV):
+     *   - 'kode' : kode jenis (tbl_item.jenis). Default, karena kode pasti terisi.
+     *   - 'nama' : nama jenis (tbl_itemjenis.ketjenis); bila kosong/tidak ada
+     *              di master, dipakai kode sebagai cadangan.
+     */
+    public const JENIS_DISPLAYS = ['kode' => 'Kode (mis. BOLT)', 'nama' => 'Nama (mis. BAUT MUR)'];
+
+    public static function getJenisDisplay(): string
+    {
+        $v = (string) self::get('jenis_display', 'kode');
+        return array_key_exists($v, self::JENIS_DISPLAYS) ? $v : 'kode';
+    }
+
+    /**
      * @return bool Hanya berlaku bila getTaxSource() === 'database_only'.
      *   true  : baris transaksi yang tarif pajaknya kosong/0 (baris & header
      *           sama-sama tidak punya nilai pajak) TIDAK diikutsertakan sama
@@ -234,6 +248,7 @@ class Settings
             'tax_source'                 => static fn(string $v): bool => in_array($v, self::TAX_SOURCES, true),
             'database_only_skip_zero_tax' => static fn(string $v): bool => in_array($v, ['0', '1'], true),
             'csv_locale'                 => static fn(string $v): bool => CsvLocale::isValid($v),
+            'jenis_display'              => static fn(string $v): bool => array_key_exists($v, self::JENIS_DISPLAYS),
             'dashboard_visible_fields'   => static fn(string $v): bool => true,
             'db_host'                    => static fn(string $v): bool => true,
             'db_port'                    => static fn(string $v): bool => $v === '' || ctype_digit($v),

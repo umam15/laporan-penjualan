@@ -42,7 +42,7 @@ data/                 # tempat settings.db dibuat otomatis (dilindungi .htaccess
    Pertama"**. Isi username & password (min. 8 karakter), lalu Anda otomatis
    login sebagai admin.
 4. Sebagai admin, buka menu **Pengaturan** untuk mengisi filter, tarif pajak,
-   format CSV default, dan **kredensial koneksi PostgreSQL** (wajib, lihat
+   format CSV default, tampilan kolom Jenis (kode/nama), dan **kredensial koneksi PostgreSQL** (wajib, lihat
    bagian di bawah). Buka menu **User** untuk menambah staf lain.
 5. Data (`settings.db`) tersimpan di volume `app_data` sehingga tetap ada
    walau container dihapus/dibangun ulang. Ganti port di `docker-compose.yml`
@@ -102,6 +102,7 @@ internasional. Keduanya memakai BOM UTF-8 di awal file.
 | Jumlah Item | Kuantitas baris, bersih setelah dikurangi retur |
 | Kode Item | `tbl_ikdt.kodeitem` |
 | Nama Item | `tbl_item.namaitem` |
+| Jenis | Kode jenis `tbl_item.jenis`, atau nama `tbl_itemjenis.ketjenis` bila admin memilih tampilan Nama (cadangan: kode) |
 | Pokok | HPP baris (net retur); dari `tbl_ikdt.hppdasar`, fallback rata-rata biaya lapisan `tbl_item_ik` |
 | Total | Nilai jual baris (net retur), `tbl_ikdt.total` |
 | Pajak Keluaran | `Total x tarif pajak` (lihat Sumber Tarif Pajak) |
@@ -150,7 +151,7 @@ bedanya sebelum menentukan mana yang cukup untuk kebutuhan Anda.
 ### 1. Backup JSON lewat menu Pengaturan (ad hoc, hanya pengaturan)
 
 Di menu **Pengaturan**, admin bisa mengunduh seluruh isi tabel `settings`
-(filter, tarif pajak, format CSV, field Dashboard, termasuk kredensial
+(filter, tarif pajak, format CSV, tampilan Jenis, field Dashboard, termasuk kredensial
 database) sebagai satu file JSON, dan memulihkannya kembali lewat form
 upload di kartu yang sama. Restore menimpa nilai yang sedang aktif dan
 divalidasi (format JSON, identitas backup, tipe tiap field) sebelum

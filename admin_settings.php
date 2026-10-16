@@ -110,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? 'general') === '
 
     $taxRaw = str_replace(',', '.', trim((string) ($_POST['tax_rate'] ?? '0')));
     $csvLocaleRaw = trim((string) ($_POST['csv_locale'] ?? 'id'));
+    $jenisDisplayRaw = trim((string) ($_POST['jenis_display'] ?? 'kode'));
     $taxSourceRaw = trim((string) ($_POST['tax_source'] ?? 'manual'));
     $skipZeroTaxRaw = isset($_POST['database_only_skip_zero_tax']) ? '1' : '0';
 
@@ -126,11 +127,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form'] ?? 'general') === '
         $error = 'Tarif pajak harus berupa angka >= 0.';
     } elseif (!CsvLocale::isValid($csvLocaleRaw)) {
         $error = 'Format CSV (locale) tidak valid.';
+    } elseif (!array_key_exists($jenisDisplayRaw, Settings::JENIS_DISPLAYS)) {
+        $error = 'Tampilan Jenis tidak valid.';
     } elseif (!in_array($taxSourceRaw, Settings::TAX_SOURCES, true)) {
         $error = 'Sumber tarif pajak tidak valid.';
     } else {
         Settings::set('tax_rate', (string) (float) $taxRaw);
         Settings::set('csv_locale', $csvLocaleRaw);
+        Settings::set('jenis_display', $jenisDisplayRaw);
         Settings::set('tax_source', $taxSourceRaw);
         Settings::set('database_only_skip_zero_tax', $skipZeroTaxRaw);
         Settings::set('dashboard_visible_fields', implode(',', $dashboardFieldsSelected));
@@ -143,6 +147,7 @@ $pelangganFilter  = Settings::get('pelanggan_filter', '');
 $itemPrefixFilter = Settings::get('item_prefix_filter', '');
 $taxRate          = Settings::getTaxRate();
 $csvLocale        = Settings::getCsvLocale();
+$jenisDisplay     = Settings::getJenisDisplay();
 $taxSource        = Settings::getTaxSource();
 $skipZeroTaxDbOnly = Settings::getDatabaseOnlySkipZeroTax();
 $dashboardVisibleFields = Settings::getDashboardVisibleFields();
@@ -235,6 +240,14 @@ try {
             <?php endforeach; ?>
         </select>
         <p class="hint">Pengguna masih bisa mengganti pilihan ini per-download di Dashboard.</p>
+
+        <label>Tampilan Kolom Jenis</label>
+        <select name="jenis_display">
+            <?php foreach (Settings::JENIS_DISPLAYS as $code => $label): ?>
+            <option value="<?= htmlspecialchars($code) ?>" <?= $jenisDisplay === $code ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <p class="hint">Berlaku untuk Dashboard, pratinjau, dan CSV. Bila memilih Nama dan nama jenis kosong, kode jenis ditampilkan sebagai cadangan.</p>
 
         <label>Tampilkan di Dashboard untuk Staf</label>
         <div class="radio-group">

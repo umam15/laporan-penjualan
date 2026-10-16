@@ -5,6 +5,19 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengacu pada [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [1.4.0]
+
+### Added
+- Kolom **Jenis** setelah Nama Item pada Dashboard (pratinjau) dan CSV,
+  diambil dari `tbl_item.jenis` (nama dari `tbl_itemjenis.ketjenis`).
+- Pengaturan admin **Tampilan Kolom Jenis**: Kode (default) atau Nama.
+  Bila Nama dipilih dan nama kosong, kode dipakai sebagai cadangan.
+
+### Changed
+- Kolom CSV bertambah satu (**Jenis**, setelah Nama Item): kolom sesudahnya
+  (Pokok s.d. GPM) bergeser satu posisi. Sesuaikan impor/rumus Excel yang
+  memakai posisi kolom.
+
 ## [1.3.1]
 
 ### Security

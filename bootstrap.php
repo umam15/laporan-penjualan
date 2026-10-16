@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /** Versi aplikasi saat ini, ditampilkan di navbar. Update di setiap rilis. */
-define('APP_VERSION', '1.3.1');
+define('APP_VERSION', '1.4.0');
 
 // Hardening cookie session: HttpOnly + SameSite=Lax. Secure hanya bila request
 // memang HTTPS, sehingga deployment HTTP lokal/Docker tetap berfungsi.

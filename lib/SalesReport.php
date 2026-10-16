@@ -173,6 +173,8 @@ class SalesReport
                 d.nobaris,
                 d.kodeitem,
                 COALESCE(i.namaitem, d.kodeitem) AS namaitem,
+                COALESCE(TRIM(i.jenis), '') AS jenis_kode,
+                COALESCE(TRIM(j.ketjenis), '') AS jenis_nama,
                 d.jumlah,
                 d.satuan,
                 COALESCE(d.jmlkonversi, 1) AS jmlkonversi,
@@ -186,6 +188,7 @@ class SalesReport
             FROM tbl_ikhd h
             INNER JOIN tbl_ikdt d ON d.notransaksi = h.notransaksi
             LEFT JOIN tbl_item i ON i.kodeitem = d.kodeitem
+            LEFT JOIN tbl_itemjenis j ON j.jenis = i.jenis
             LEFT JOIN tbl_kantor k ON k.kodekantor = h.kodekantor
             LEFT JOIN LATERAL (
                 SELECT
@@ -213,6 +216,7 @@ class SalesReport
         $manualTaxRate     = Settings::getTaxRate(); // persen, mis. 0.5 => 0.5%
         $taxSource         = Settings::getTaxSource(); // 'manual', 'database', atau 'database_only'
         $skipZeroTaxDbOnly = Settings::getDatabaseOnlySkipZeroTax(); // hanya dipakai bila $taxSource === 'database_only'
+        $jenisDisplay      = Settings::getJenisDisplay(); // 'kode' (default) atau 'nama'
 
         while ($r = $stmt->fetch()) {
             $jumlah      = (float) $r['jumlah'];
@@ -292,6 +296,7 @@ class SalesReport
                 'jumlah_item'    => $netQty,
                 'kodeitem'       => $r['kodeitem'],
                 'namaitem'       => $r['namaitem'],
+                'jenis'          => ($jenisDisplay === 'nama' && $r['jenis_nama'] !== '') ? $r['jenis_nama'] : $r['jenis_kode'],
                 'pokok'          => $pokok,
                 'total'          => $netTotal,
                 'pajak_keluaran' => $pajakKeluaran,
@@ -348,6 +353,7 @@ class SalesReport
                     'jumlah_item'    => CsvLocale::number($profile, $row['jumlah_item'], 3),
                     'kodeitem'       => $row['kodeitem'],
                     'namaitem'       => $row['namaitem'],
+                    'jenis'          => $row['jenis'],
                     'pokok'          => CsvLocale::number($profile, $row['pokok'], 2),
                     'total'          => CsvLocale::number($profile, $row['total'], 2),
                     'pajak_keluaran' => CsvLocale::number($profile, $row['pajak_keluaran'], 2),
@@ -397,7 +403,7 @@ class SalesReport
 
         fputcsv($out, [
             'No Transaksi', 'Tanggal', 'Dept', 'Kode Pelanggan', 'Jumlah Item',
-            'Kode Item', 'Nama Item', 'Pokok', 'Total', 'Pajak Keluaran',
+            'Kode Item', 'Nama Item', 'Jenis', 'Pokok', 'Total', 'Pajak Keluaran',
             'Laba Kotor', 'Proc Laba (%)', 'GPM',
         ], $delimiter);
 
@@ -411,6 +417,7 @@ class SalesReport
                 CsvLocale::number($profile, $row['jumlah_item'], 3),
                 $row['kodeitem'],
                 $row['namaitem'],
+                $row['jenis'],
                 CsvLocale::number($profile, $row['pokok'], 2),
                 CsvLocale::number($profile, $row['total'], 2),
                 CsvLocale::number($profile, $row['pajak_keluaran'], 2),
