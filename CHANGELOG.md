@@ -5,7 +5,7 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengacu pada [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
-## [Belum dirilis]
+## [1.4.1]
 
 ### Added
 - `partials/.htaccess` (menolak akses web), sama seperti `data/` dan `lib/`.
