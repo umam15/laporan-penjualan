@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
 
-/** Versi aplikasi saat ini, ditampilkan di navbar. Update di setiap rilis. */
-define('APP_VERSION', '1.4.0');
+/**
+ * Versi aplikasi, ditampilkan di navbar. Sumber tunggal: berkas VERSION
+ * (dijaga sama dengan CHANGELOG.md oleh tests/cases.php).
+ */
+define('APP_VERSION', is_readable(__DIR__ . '/VERSION') ? trim((string) file_get_contents(__DIR__ . '/VERSION')) : 'dev');
 
 // Hardening cookie session: HttpOnly + SameSite=Lax. Secure hanya bila request
 // memang HTTPS, sehingga deployment HTTP lokal/Docker tetap berfungsi.

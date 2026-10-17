@@ -10,3 +10,8 @@ docs
 Dockerfile
 docker-compose.yml
 .dockerignore
+data/*.db-*
+tests
+CONTRIBUTING.md
+GLOSARIUM.md
+TODO.md

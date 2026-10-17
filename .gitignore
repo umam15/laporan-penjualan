@@ -1,3 +1,6 @@
 .gitea/
 sample/
-TODO.md
+data/*.db
+data/*.db-*
+.env
+*.zip

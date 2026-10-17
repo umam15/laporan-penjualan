@@ -1,0 +1,69 @@
+name: CI
+
+# Tes otomatis: sintaks PHP, tes (termasuk integrasi PostgreSQL sementara),
+# build Docker, dan pemeriksaan isi paket Docker.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Batalkan run lama pada branch/PR yang sama bila ada push baru.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lp
+          POSTGRES_PASSWORD: lp
+          POSTGRES_DB: lp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lp -d lp"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      # Action dipin ke SHA commit (v4.3.0), bukan tag yang bisa digeser.
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+
+      - name: Build image Docker
+        run: docker build -t lp-ci .
+
+      - name: Cek sintaks PHP (php -l)
+        run: |
+          docker run --rm -v "$PWD":/app -w /app lp-ci sh -c '
+            for f in $(find . -name "*.php" -not -path "./.git/*"); do
+              php -l "$f" || exit 1
+            done'
+
+      - name: Isi data uji PostgreSQL
+        run: |
+          docker run --rm --network host -e PGPASSWORD=lp -v "$PWD/tests":/t:ro \
+            postgres:16-alpine psql -h 127.0.0.1 -U lp -d lp -v ON_ERROR_STOP=1 -q -f /t/seed.sql
+
+      - name: Jalankan tes
+        run: |
+          docker run --rm --network host -v "$PWD":/app -w /app \
+            -e LP_TEST_PG_HOST=127.0.0.1 lp-ci php tests/run.php
+
+      - name: Pastikan paket Docker bersih
+        run: |
+          docker run --rm lp-ci sh -c '
+            cd /var/www/html
+            test -f VERSION || { echo "VERSION tidak ada di image"; exit 1; }
+            for n in tests docs .git .github sample TODO.md CONTRIBUTING.md GLOSARIUM.md CHANGELOG.md README.md; do
+              if [ -e "$n" ]; then echo "tidak boleh ada di image: $n"; exit 1; fi
+            done
+            if ls data | grep -q "\.db"; then echo "ada berkas .db di data/"; exit 1; fi'

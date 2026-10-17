@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0     # ambil semua history + tag, biar bisa dicek tag mana yang sudah ada
           fetch-tags: true
@@ -72,7 +72,7 @@ jobs:
 
       - name: Buat tag & GitHub Release
         if: steps.tagcheck.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           tag_name: ${{ steps.changelog.outputs.tag }}
           name: "${{ steps.changelog.outputs.tag }}"

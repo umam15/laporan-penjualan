@@ -9,10 +9,20 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
 ### Added
 - `partials/.htaccess` (menolak akses web), sama seperti `data/` dan `lib/`.
+- Berkas `VERSION` sebagai sumber tunggal versi; `APP_VERSION` dibaca darinya.
+- Tes otomatis tanpa dependensi (`php tests/run.php`): versi, CsvLocale, CSRF,
+  Auth (hash, batas login, sesi idle, ganti password), Settings, dan integrasi
+  PostgreSQL (kolom Jenis) dengan data uji `tests/seed.sql`.
+- CI GitHub (`.github/workflows/ci.yml`): `php -l`, tes, build Docker, dan
+  pemeriksaan isi image; `concurrency` dan izin minimal.
+- `CONTRIBUTING.md`, `TODO.md`, dan `GLOSARIUM.md`.
 
 ### Changed
 - README bagian Instalasi Manual: cara memblokir `data/`, `lib/`, `partials/`
   di Apache (dengan/tanpa `.htaccess`) dan Nginx, plus langkah pemeriksaan.
+- Action GitHub di `release.yml` dipin ke SHA commit.
+- `.gitignore`: tambah `data/*.db`, `.env`, `*.zip`; `TODO.md` kini dilacak.
+  `.dockerignore`: `tests`, `TODO.md`, `CONTRIBUTING.md`, `GLOSARIUM.md` tidak ikut image.
 
 ## [1.4.0]
 

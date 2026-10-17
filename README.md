@@ -28,8 +28,8 @@ export.php           # endpoint streaming CSV
 admin_settings.php   # admin: filter data, tarif pajak, koneksi database
 admin_users.php       # admin: kelola user staf
 profile.php           # user: ganti password sendiri
-lib/                  # Database, Auth, CsvLocale, Settings, SalesReport
-partials/, assets/
+lib/                  # Database, Auth, Csrf, CsvLocale, Settings, SalesReport
+partials/, assets//                # tes otomatis: php tests/run.php (lihat CONTRIBUTING.md)              # sumber tunggal nomor versi (sama dengan CHANGELOG.md)
 data/                 # tempat settings.db dibuat otomatis (dilindungi .htaccess)
 ```
 
