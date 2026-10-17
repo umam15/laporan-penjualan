@@ -54,8 +54,33 @@ akan muncul lagi otomatis kalau `settings.db` dihapus.
 ## Instalasi (Manual, tanpa Docker)
 
 1. Upload seluruh folder ke web server, arahkan document root ke folder ini.
-2. `chmod 775 data`
-3. Ikuti langkah 2–4 pada bagian Instalasi (Docker) di atas.
+2. `chmod 775 data` (pemilik: user web server, mis. `www-data`).
+3. **Blokir `data/`, `lib/`, dan `partials/` dari akses web.** Wajib, karena
+   `data/settings.db` berisi hash password dan kredensial database. Pilih salah
+   satu:
+   - **Apache dengan `.htaccess`**: berkas `.htaccess` sudah disertakan di ketiga
+     folder, tetapi hanya berlaku bila `AllowOverride All` aktif untuk folder
+     aplikasi (bawaan paket Apache Debian/Ubuntu adalah `None`, sehingga `.htaccess` diabaikan).
+   - **Apache tanpa `.htaccess`** (lebih aman): tambahkan di konfigurasi
+     vhost, sesuaikan path:
+
+     ```apache
+     <DirectoryMatch "^/var/www/laporan-penjualan/(data|lib|partials)(/|$)">
+         Require all denied
+     </DirectoryMatch>
+     ```
+
+   - **Nginx**: tambahkan di blok `server`:
+
+     ```nginx
+     location ~ ^/(data|lib|partials)(/|$) { deny all; }
+     location ~* \.db$ { deny all; }
+     ```
+
+4. Ikuti langkah 2–4 pada bagian Instalasi (Docker) di atas.
+5. Periksa pemblokiran: `curl -I https://domain-anda/data/settings.db`,
+   `/lib/Auth.php`, dan `/partials/nav.php` harus menjawab 403 atau 404, bukan
+   200. Hapus akses bila salah satunya terbuka.
 
 ## Pengaturan Database
 

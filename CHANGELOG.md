@@ -5,6 +5,15 @@ Semua perubahan penting pada proyek ini didokumentasikan di file ini.
 Format mengacu pada [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [Belum dirilis]
+
+### Added
+- `partials/.htaccess` (menolak akses web), sama seperti `data/` dan `lib/`.
+
+### Changed
+- README bagian Instalasi Manual: cara memblokir `data/`, `lib/`, `partials/`
+  di Apache (dengan/tanpa `.htaccess`) dan Nginx, plus langkah pemeriksaan.
+
 ## [1.4.0]
 
 ### Added
